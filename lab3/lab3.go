@@ -16,8 +16,6 @@ func Calculator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var num1, num2 int
-	// num1, err1 := strconv.ParseFloat(parts[1], 64)
-	// num2, err2 := strconv.ParseFloat(parts[2], 64)
 	num1, err1 := strconv.Atoi(parts[1])
 	num2, err2 := strconv.Atoi(parts[2])
 
