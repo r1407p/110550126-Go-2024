@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 // TODO: Create a struct to hold the data sent to the template
@@ -95,7 +94,12 @@ func Calculator(w http.ResponseWriter, r *http.Request) {
 	var result Data
 	result = get_result(op, num1, num2)
 
-
+	tmpl, err := template.ParseFiles("index.html")
+	if err != nil {
+		http.Error(w, "Error parsing template", http.StatusInternalServerError)
+		return
+	}
+	tmpl.Execute(w, result)
 
 }
 
