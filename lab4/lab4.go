@@ -26,6 +26,48 @@ func show_error(w http.ResponseWriter) {
 	}
 	tmpl.Execute(w, nil)
 }
+func gcd(a int, b int) int {
+	if b == 0 {
+		return a
+	}
+	return gcd(b, a % b)
+}
+
+func lcm(a int, b int) int {
+	return a * b / gcd(a, b)
+}
+
+
+func get_result(op string, num1 int, num2 int) Data {
+	var result Data
+	result.op = op
+	result.num1 = num1
+	result.num2 = num2
+
+	switch op {
+		case "add":
+			result.Result = num1 + num2
+			result.Expression = fmt.Sprintf("%d + %d", num1, num2)
+		case "sub":
+			result.Result = num1 - num2
+			result.Expression = fmt.Sprintf("%d - %d", num1, num2)
+		case "mul":
+			result.Result = num1 * num2
+			result.Expression = fmt.Sprintf("%d * %d", num1, num2)
+		case "div":
+			result.Result = num1 / num2
+			// remainder := num1 % num2
+			result.Expression = fmt.Sprintf("%d / %d", num1, num2)
+		case "gcd":
+			result.Result = gcd(num1, num2)
+			result.Expression = fmt.Sprintf("GCD(%d, %d)", num1, num2)
+		case "lcm":
+			result.Result = lcm(num1, num2)
+			result.Expression = fmt.Sprintf("LCM(%d, %d)", num1, num2)
+	}
+	return result
+
+}
 func Calculator(w http.ResponseWriter, r *http.Request) {
 	// TODO: Finish this function
 	op := r.URL.Query().Get("op")
