@@ -14,7 +14,8 @@ type Data struct {
 	op string
 	num1 int
 	num2 int
-	result int
+	Result int
+	Expression string
 }
 
 func show_error(w http.ResponseWriter) {
@@ -27,22 +28,31 @@ func show_error(w http.ResponseWriter) {
 }
 func Calculator(w http.ResponseWriter, r *http.Request) {
 	// TODO: Finish this function
-	path := strings.TrimPrefix(r.URL.Path, "/")
-	parts := strings.Split(path, "/")
-	if len(parts) != 3 {
+	op := r.URL.Query().Get("op")
+	num1Str := r.URL.Query().Get("num1")
+	num2Str := r.URL.Query().Get("num2")
+
+	if op == "" || num1Str == "" || num2Str == "" {
 		show_error(w)
 		return
 	}
 	var num1, num2 int
-	num1, err1 := strconv.Atoi(parts[1])
-	num2, err2 := strconv.Atoi(parts[2])
+	num1, err1 := strconv.Atoi(num1Str)
+	num2, err2 := strconv.Atoi(num2Str)
+
 	validOps := map[string]bool{"add": true, "sub": true, "mul": true, "div": true, "gcd": true, "lcm": true}
-	if !validOps[parts[0]] || err1 != nil || err2 != nil {
+	if !validOps[op] || err1 != nil || err2 != nil {
 		show_error(w)
 		return
 	}
-	fmt.Fprintf(w, "%d, %d", num1, num2)
-	
+
+	if op == "div" && num2 == 0 {
+		show_error(w)
+		return
+	}
+	var result Data
+	result = get_result(op, num1, num2)
+
 
 
 }
