@@ -2,9 +2,11 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gorilla/websocket"
 	"github.com/reactivex/rxgo/v2"
@@ -81,13 +83,63 @@ func wshandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func InitObservable() {
-	// TODO: Please create an Observable to handle the messages
-	/*
-		ObservableMsg = ObservableMsg.Filter(...) ... {
-		}).Map(...) {
-			...
+	swearWords := loadWordsFromFile("swear_word.txt")
+	sensitiveNames := loadSensitiveNames("sensitive_name.txt")
+
+	ObservableMsg = rxgo.FromChannel(messages).
+		Filter(func(item interface{}) bool {
+			if message, ok := item.(string); ok {
+				for swearWord := range swearWords {
+					if strings.Contains(message, swearWord) {
+						return false
+					}
+				}
+			}
+			return true
+		}).
+		Map(func(_ context.Context, item interface{}) (interface{}, error) {
+			if message, ok := item.(string); ok {
+				for name, modifiedName := range sensitiveNames {
+					message = strings.ReplaceAll(message, name, modifiedName)
+				}
+				return message, nil
+			}
+			return item, nil
 		})
-	*/
+}
+
+func loadWordsFromFile(filename string) map[string]bool {
+	words := make(map[string]bool)
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatalf("failed to open %s: %v", filename, err)
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		words[scanner.Text()] = true
+	}
+	return words
+}
+
+func loadSensitiveNames(filename string) map[string]string {
+	names := make(map[string]string)
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatalf("failed to open %s: %v", filename, err)
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		name := scanner.Text()
+		runes := []rune(name)
+		if len(runes) >= 2 {
+			names[name] = string(runes[0]) + "*" + string(runes[2:])
+		} else {
+			names[name] = name
+		}
+	}
+	return names
 }
 
 func main() {
